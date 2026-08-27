@@ -1,0 +1,96 @@
+{
+  "name": "gc01-bedroom-below-ndss",
+  "source": "synthetic",
+  "provenance": "حالة تركيبية مبنية بحساب يدوي لا بتشغيل. الهندسة مضبوطة كي يمرّ كل حكم آخر، فلا يُصدر المخطط إلا NDSS-001 و DRW-001 عن غرفة نوم مزدوجة واحدة: 2800×2900 مم على خط المركز = 8.12 م²، وصافيًا 2588×2788 = 7.22 م²، وNDSS يشترط 11.5 م². ليست مخططًا معتمدًا ولا تصدّق رقمًا.",
+  "note": "الحكمان يجب أن ينقلبا معًا عند تغيير uk.bedroom_min_area[bedroom_double]. لو ظهر حكم ثالث فقد تغيّر رقم آخر أو انكسرت قاعدة — راجع أيهما قبل تعديل هذه القائمة.",
+  "expect_clean": false,
+  "expect_errors": ["NDSS-001", "DRW-001"],
+  "brief": {
+    "project_name": "gc01",
+    "seed": 1,
+    "bedspaces": 3,
+    "access_standard": "M4(1)",
+    "plot": { "width_mm": 8450, "depth_mm": 12000 },
+    "setbacks": {
+      "front_mm": 500, "rear_mm": 500, "left_mm": 500, "right_mm": 500
+    },
+    "storeys": [
+      { "index": 0, "floor_level_mm": 0, "floor_to_ceiling_mm": 2400 }
+    ],
+    "rooms": [
+      { "id": "hall", "type": "entrance_hall",
+        "target_area_mm2": 11175000, "storey": 0 },
+      { "id": "corridor", "type": "hall",
+        "target_area_mm2": 13300000, "storey": 0 },
+      { "id": "living", "type": "living",
+        "target_area_mm2": 16900000, "storey": 0 },
+      { "id": "kitchen", "type": "kitchen",
+        "target_area_mm2": 13975000, "storey": 0 },
+      { "id": "bed1", "type": "bedroom_double", "storey": 0,
+        "target_area_mm2": 8120000,
+        "note": "دون NDSS قصدًا — هذا موضوع الحالة" },
+      { "id": "bed2", "type": "bedroom_single",
+        "target_area_mm2": 8680000, "storey": 0 },
+      { "id": "bath", "type": "bathroom",
+        "target_area_mm2": 5880000, "storey": 0 },
+      { "id": "store", "type": "storage",
+        "target_area_mm2": 3920000, "storey": 0 }
+    ]
+  },
+  "layout": {
+    "project_name": "gc01",
+    "engine_version": "0.7.0",
+    "seed": 1,
+    "storeys": [
+      {
+        "index": 0,
+        "envelope": { "x": 500, "y": 500, "w": 7450, "h": 11000 },
+        "protected_stair": false,
+        "rooms": [
+          { "id": "hall", "type": "entrance_hall", "storey": 0,
+            "rect": { "x": 500, "y": 500, "w": 7450, "h": 1500 } },
+          { "id": "living", "type": "living", "storey": 0,
+            "rect": { "x": 500, "y": 2000, "w": 3250, "h": 5200 } },
+          { "id": "kitchen", "type": "kitchen", "storey": 0,
+            "rect": { "x": 500, "y": 7200, "w": 3250, "h": 4300 } },
+          { "id": "corridor", "type": "hall", "storey": 0,
+            "rect": { "x": 3750, "y": 2000, "w": 1400, "h": 9500 } },
+          { "id": "bed1", "type": "bedroom_double", "storey": 0,
+            "rect": { "x": 5150, "y": 2000, "w": 2800, "h": 2900 } },
+          { "id": "bed2", "type": "bedroom_single", "storey": 0,
+            "rect": { "x": 5150, "y": 4900, "w": 2800, "h": 3100 } },
+          { "id": "bath", "type": "bathroom", "storey": 0,
+            "rect": { "x": 5150, "y": 8000, "w": 2800, "h": 2100 } },
+          { "id": "store", "type": "storage", "storey": 0,
+            "rect": { "x": 5150, "y": 10100, "w": 2800, "h": 1400 } }
+        ],
+        "openings": [
+          { "id": "D01", "kind": "door", "storey": 0, "a": "hall",
+            "clear_width_mm": 900 },
+          { "id": "D02", "kind": "door", "storey": 0,
+            "a": "hall", "b": "living", "clear_width_mm": 750 },
+          { "id": "D03", "kind": "door", "storey": 0,
+            "a": "hall", "b": "corridor", "clear_width_mm": 750 },
+          { "id": "D04", "kind": "door", "storey": 0,
+            "a": "corridor", "b": "kitchen", "clear_width_mm": 750 },
+          { "id": "D05", "kind": "door", "storey": 0,
+            "a": "corridor", "b": "bed1", "clear_width_mm": 750 },
+          { "id": "D06", "kind": "door", "storey": 0,
+            "a": "corridor", "b": "bed2", "clear_width_mm": 750 },
+          { "id": "D07", "kind": "door", "storey": 0,
+            "a": "corridor", "b": "bath", "clear_width_mm": 750 },
+          { "id": "D08", "kind": "door", "storey": 0,
+            "a": "corridor", "b": "store", "clear_width_mm": 750 },
+          { "id": "W01", "kind": "window", "storey": 0, "a": "living",
+            "clear_width_mm": 1500, "sill_mm": 900 },
+          { "id": "W02", "kind": "window", "storey": 0, "a": "kitchen",
+            "clear_width_mm": 1500, "sill_mm": 900 },
+          { "id": "W03", "kind": "window", "storey": 0, "a": "bed1",
+            "clear_width_mm": 1200, "sill_mm": 900 },
+          { "id": "W04", "kind": "window", "storey": 0, "a": "bed2",
+            "clear_width_mm": 1200, "sill_mm": 900 }
+        ]
+      }
+    ]
+  }
+}
