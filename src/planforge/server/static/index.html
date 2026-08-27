@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PlanForge — المحرر</title>
+<style>
+  :root { --bg:#f4f5f7; --panel:#fff; --line:#dde1e6; --err:#a3312f;
+          --warn:#8a6d1f; --ok:#2f6b3a; }
+  * { box-sizing:border-box }
+  body { margin:0; font:14px/1.6 system-ui,sans-serif; background:var(--bg);
+         color:#23262a; display:grid; grid-template-columns:1fr 380px;
+         height:100vh }
+  #stage { overflow:auto; padding:16px }
+  #side { background:var(--panel); border-inline-start:1px solid var(--line);
+          overflow:auto; padding:16px }
+  h1 { font-size:16px; margin:0 0 12px }
+  h3 { font-size:13px; margin:16px 0 6px; color:#555 }
+  .stamp { font:12px/1.5 monospace; background:#fff6e5;
+           border:1px solid #e6d3a3; padding:8px; border-radius:4px }
+  .stamp.ready { background:#eef7ef; border-color:#bcd9c1 }
+  svg.plan { width:100%; height:auto; background:#fff;
+             border:1px solid var(--line); border-radius:4px }
+  .wall { cursor:pointer } .wall:hover { opacity:.7 }
+  .row { display:flex; gap:6px; align-items:center; margin:4px 0 }
+  button { font:inherit; padding:5px 10px; border:1px solid var(--line);
+           background:#fff; border-radius:4px; cursor:pointer }
+  button:disabled { opacity:.45; cursor:default }
+  input, select { font:inherit; padding:4px 6px; border:1px solid var(--line);
+                  border-radius:4px; width:100% }
+  ul { margin:4px 0; padding-inline-start:18px }
+  li { margin:3px 0 }
+  .e { color:var(--err) } .w { color:var(--warn) } .g { color:var(--ok) }
+  #msg { min-height:22px; font-size:13px }
+  code { font:12px monospace; background:#f0f1f3; padding:1px 4px;
+         border-radius:3px }
+</style>
+</head>
+<body>
+<main id="stage"><p>لا جلسة. افتح مشروعًا أو ولّد مخططًا.</p></main>
+<aside id="side">
+  <h1>PlanForge</h1>
+  <div class="row" id="authRow">
+    <input id="tok" type="password" placeholder="رمز الوصول">
+    <button id="auth">دخول</button>
+  </div>
+  <div id="stampBox"></div>
+  <div class="row">
+    <input id="path" placeholder="مسار .pfproj.json">
+    <button id="open">فتح</button>
+  </div>
+  <div class="row">
+    <button id="undo" disabled>تراجع</button>
+    <button id="redo" disabled>إعادة</button>
+    <button id="save">حفظ</button>
+  </div>
+  <div id="msg"></div>
+
+  <h3>تحريك جدار</h3>
+  <div class="row"><select id="lines"></select></div>
+  <div class="row">
+    <input id="coord" type="number" step="10" placeholder="الإحداثي (مم)">
+    <button id="moveWall">حرّك</button>
+  </div>
+
+  <h3>تغيير حجم غرفة</h3>
+  <div class="row"><select id="rooms"></select></div>
+  <div class="row">
+    <input id="area" type="number" step="0.5" placeholder="المساحة (م²)">
+    <button id="resize">طبّق</button>
+  </div>
+
+  <h3>الحالة</h3>
+  <div id="status"></div>
+  <h3>المخالفات</h3>
+  <div id="issues"></div>
+</aside>
+<script src="/static/app.js"></script>
+</body>
+</html>
