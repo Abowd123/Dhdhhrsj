@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>عارض مخرجات PlanForge</title>
+<style>
+  :root { --bg:#f4f5f7; --card:#fff; --line:#dde1e6; --err:#a3312f;
+          --warn:#8a6d1f; --ok:#2f6b3a; --dim:#667; }
+  * { box-sizing:border-box }
+  body { margin:0; padding:20px; background:var(--bg); color:#23262a;
+         font:15px/1.7 system-ui,sans-serif }
+  main { max-width:1000px; margin:0 auto }
+  h1 { font-size:20px; margin:0 0 6px }
+  h2 { font-size:16px; margin:22px 0 8px }
+  .card { background:var(--card); border:1px solid var(--line);
+          border-radius:6px; padding:14px; margin:12px 0 }
+  .note { color:var(--dim); font-size:13px }
+  .stamp { font:13px/1.6 monospace; background:#fff6e5;
+           border:1px solid #e6d3a3; border-radius:4px; padding:10px }
+  .stamp.ready { background:#eef7ef; border-color:#bcd9c1 }
+  table { width:100%; border-collapse:collapse; font-size:14px }
+  th, td { text-align:start; padding:5px 8px;
+           border-bottom:1px solid var(--line) }
+  th { color:var(--dim); font-weight:600 }
+  ul { margin:6px 0; padding-inline-start:20px }
+  li { margin:5px 0 }
+  code { font:12px monospace; background:#f0f1f3; padding:1px 5px;
+         border-radius:3px }
+  .e { color:var(--err) } .w { color:var(--warn) } .g { color:var(--ok) }
+  .unsigned { color:var(--warn); font-size:12px }
+  input[type=file] { font:inherit; margin:4px 0 10px }
+  svg.plan { width:100%; height:auto }
+</style>
+</head>
+<body>
+<main>
+  <h1>عارض مخرجات PlanForge</h1>
+  <p class="note">
+    عارض لا مولّد. التوليد يحتاج CP-SAT وهو مكتبة مُصرَّفة لا تعمل في
+    المتصفّح، فهذه الصفحة تقرأ ما أنتجه
+    <code>planforge run --json --svg</code> على جهازك. لا شيء يُرسل إلى أي
+    جهة: القراءة محلّية بالكامل.
+  </p>
+
+  <div class="card">
+    <p><strong>ملف التقرير</strong> — <code>out/&lt;اسم&gt;.report.json</code></p>
+    <input type="file" id="rep" accept=".json">
+    <p><strong>ملف الرسم</strong> — <code>out/&lt;اسم&gt;.svg.html</code> (اختياري)</p>
+    <input type="file" id="svg" accept=".html,.svg">
+  </div>
+
+  <div id="out"></div>
+</main>
+
+<script>
+'use strict';
+
+const $ = (id) => document.getElementById(id);
+
+function esc(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const FEATURE_LABELS = {
+  clear_gia_m2: 'المساحة الصافية (م²)',
+  circulation_ratio: 'نسبة الحركة',
+  mean_area_error: 'متوسط خطأ المساحة',
+  worst_area_error: 'أسوأ خطأ مساحة',
+  unfurnishable_rooms: 'غرف لا تُؤثَّث',
+  aspect_penalty: 'عقوبة النسبة الباعية',
+  external_wall_per_habitable: 'واجهة لكل غرفة سكن (م)',
+  wet_stack_ratio: 'تكديس الغرف الرطبة',
+  structural_alignment_ratio: 'المحاذاة الإنشائية',
+  wall_length_per_m2: 'طول الجدران لكل م²',
+  door_count: 'عدد الأبواب',
+  kitchen_run_margin: 'هامش منضدة المطبخ',
+  errors: 'مخالفات',
+  warnings: 'تحذيرات'
+};
+
+const RATIOS = new Set([
+  'circulation_ratio', 'mean_area_error', 'worst_area_error',
+  'wet_stack_ratio', 'structural_alignment_ratio', 'kitchen_run_margin'
+]);
+
+function formatFeature(key, value) {
+  if (typeof value !== 'number') return esc(value);
+  if (RATIOS.has(key)) return (value * 100).toFixed(1) + '%';
+  return Number.isInteger(value) ? String(value) : value.toFixed(3);
+}
+
+function renderStamp(assurance) {
+  if (!assurance) return '';
+  const ready = assurance.delivery_ready ? ' ready' : '';
+  return '<div class="card"><p class="stamp' + ready + '">' +
+    esc(assurance.stamp) + '<br>' + esc(assurance.summary_ar) +
+    '</p></div>';
+}
+
+function renderSummary(report) {
+  const rows = [
+    ['المشروع', esc(report.project)],
+    ['الحالة', report.ok
+      ? '<span class="g">جائز</span>'
+      : '<span class="e">يحتوي مخالفات</span>'],
+    ['الدرجة', esc(report.rank)],
+    ['دورات الأنبوب', esc(report.rounds)]
+  ];
+  if (typeof report.shrink_ratio === 'number') {
+    rows.push([
+      'انكماش الجدران',
+      ((1 - report.shrink_ratio) * 100).toFixed(1) + '%'
+    ]);
+  }
+  const body = rows
+    .map((r) => '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>')
+    .join('');
+  return '<div class="card"><h2>الملخّص</h2><table>' + body +
+    '</table></div>';
+}
+
+function renderFeatures(features) {
+  if (!features) return '';
+  const body = Object.keys(features)
+    .map(function (key) {
+      const label = FEATURE_LABELS[key] || key;
+      return '<tr><th>' + esc(label) + '</th><td>' +
+        formatFeature(key, features[key]) + '</td></tr>';
+    })
+    .join('');
+  return '<div class="card"><h2>الخصائص المقيسة</h2><table>' + body +
+    '</table></div>';
+}
+
+function renderRestsOn(restsOn) {
+  if (!restsOn) return '';
+  const untrusted = Object.keys(restsOn).filter(function (path) {
+    return restsOn[path] === 'unsigned' || restsOn[path] === 'stale';
+  });
+  const total = Object.keys(restsOn).length;
+  if (!total) {
+    return '<br><span class="note">لا يستند إلى رقم كودي</span>';
+  }
+  if (!untrusted.length) {
+    return '<br><span class="note g">يستند إلى ' + total +
+      ' رقمًا، كلها موقَّعة</span>';
+  }
+  return '<br><span class="unsigned">يستند إلى ' + total +
+    ' رقمًا، ' + untrusted.length + ' منها غير موقَّع: ' +
+    esc(untrusted.slice(0, 4).join(' · ')) +
+    (untrusted.length > 4 ? ' …' : '') + '</span>';
+}
+
+function renderViolations(violations) {
+  if (!violations || !violations.length) {
+    return '<div class="card"><h2>المخالفات</h2>' +
+      '<p class="g">لا مخالفات ولا تحذيرات.</p></div>';
+  }
+  const groups = { error: [], warn: [] };
+  violations.forEach(function (v) {
+    const bucket = v.severity === 'error' ? 'error' : 'warn';
+    groups[bucket].push(v);
+  });
+
+  let html = '<div class="card"><h2>المخالفات</h2>';
+  [['error', 'e', 'أخطاء'], ['warn', 'w', 'تحذيرات']].forEach(
+    function (spec) {
+      const list = groups[spec[0]];
+      if (!list.length) return;
+      html += '<h2 class="' + spec[1] + '">' + spec[2] +
+        ' (' + list.length + ')</h2><ul>';
+      list.forEach(function (v) {
+        html += '<li class="' + spec[1] + '"><code>' + esc(v.rule) +
+          '</code> ' + esc(v.message) + renderRestsOn(v.rests_on) +
+          '</li>';
+      });
+      html += '</ul>';
+    }
+  );
+  return html + '</div>';
+}
+
+$('rep').onchange = async function (event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const report = JSON.parse(await file.text());
+    $('out').innerHTML =
+      renderStamp(report.assurance) +
+      renderSummary(report) +
+      renderFeatures(report.features) +
+      renderViolations(report.violations);
+  } catch (err) {
+    $('out').innerHTML = '<div class="card e">تعذّرت القراءة: ' +
+      esc(err.message) + '</div>';
+  }
+};
+
+/* الرسم يُحقن كـHTML من ملف يختاره المستخدم من جهازه. المصدر محلّي لا
+   شبكي، فلا سطح هجوم جديد — لكن لا تفتح ملفًا مجهول المصدر. */
+$('svg').onchange = async function (event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'card';
+  wrap.innerHTML = await file.text();
+  $('out').appendChild(wrap);
+};
+</script>
+</body>
+</html>
