@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "planforge"
+version = "0.7.0"
+description = "توليد مخططات سكنية مُدقَّقة على لوائح المملكة المتحدة"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+
+dependencies = [
+  "ortools>=9.10,<10",
+  "pydantic>=2.7,<3",
+  "ezdxf>=1.2,<2",
+]
+
+[project.optional-dependencies]
+server = ["fastapi>=0.111,<1", "uvicorn[standard]>=0.30,<1"]
+dev = [
+  "pytest>=8.2",
+  "pytest-timeout>=2.3",
+  "ruff>=0.5",
+  "mypy>=1.10",
+]
+
+[project.scripts]
+planforge = "planforge.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/planforge"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 600
+markers = ["slow: يستدعي المُحلّل أو يفتح عمليات فرعية"]
+filterwarnings = [
+  "default",
+  "error::DeprecationWarning:planforge.*",
+]
+
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RET", "C4"]
+ignore = ["B008"]   # Depends()/Body() في FastAPI
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["ortools.*", "ezdxf.*"]
+ignore_missing_imports = true
