@@ -1,0 +1,37 @@
+{
+  "project_name": "example-bungalow",
+  "seed": 11,
+  "bedspaces": 4,
+  "access_standard": "M4(1)",
+  "street_side": "south",
+  "plot": { "width_mm": 9500, "depth_mm": 12000 },
+  "setbacks": {
+    "front_mm": 1500, "rear_mm": 1500, "left_mm": 500, "right_mm": 500
+  },
+  "storeys": [
+    { "index": 0, "floor_level_mm": 0, "floor_to_ceiling_mm": 2500 }
+  ],
+  "rooms": [
+    { "id": "hall", "type": "entrance_hall",
+      "target_area_mm2": 11500000, "storey": 0,
+      "note": "11.5 م² ÷ عرض المظروف 8.5 م = شريط 1.35 م؛ صافيًا 1.25 م فوق حد DRW-003" },
+    { "id": "living", "type": "living",
+      "target_area_mm2": 17500000, "storey": 0 },
+    { "id": "kitchen", "type": "kitchen_dining",
+      "target_area_mm2": 12400000, "storey": 0 },
+    { "id": "bed1", "type": "bedroom_main",
+      "target_area_mm2": 13500000, "storey": 0,
+      "note": "NDSS 11.5 م² × 1.17 تعويضًا للانكماش — الحكم على الصافي" },
+    { "id": "bed2", "type": "bedroom_double",
+      "target_area_mm2": 13000000, "storey": 0 },
+    { "id": "bath", "type": "bathroom",
+      "target_area_mm2": 5500000, "storey": 0 },
+    { "id": "wc", "type": "wc",
+      "target_area_mm2": 3100000, "storey": 0 }
+  ],
+  "relations": [
+    { "kind": "direct_access", "a": "hall", "b": "living" },
+    { "kind": "direct_access", "a": "hall", "b": "wc" },
+    { "kind": "not_adjacent", "a": "wc", "b": "kitchen" }
+  ]
+}
